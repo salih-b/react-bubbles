@@ -46,7 +46,17 @@ return res.data;
     // make a delete request to delete this color
     axiosWithAuth()
     .delete(`/api/colors/${color.id}`)
-    .then(res => console.log('deleted res -->',res))
+    .then(res => {
+    const newColors = colors.filter(e =>{
+      if(e.id !== color.id){
+        return true;
+      } else{
+        return false;
+      }
+    });
+    updateColors(newColors);
+      console.log('deleted res -->',res)
+    })
     .catch(res => console.log(res));
   };
 
