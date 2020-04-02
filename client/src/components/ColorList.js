@@ -1,16 +1,19 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { axiosWithAuth } from "../utils/axiosWithAuth";
 
 const initialColor = {
   color: "",
   code: { hex: "" }
 };
 
-const ColorList = ({ colors, updateColors }) => {
-  console.log(colors);
+const ColorList = ({ colors, updateColors}) => {
+  console.log('colors in colorList',colors);
   const [editing, setEditing] = useState(false);
   const [colorToEdit, setColorToEdit] = useState(initialColor);
+console.log('Color to edit -->',colorToEdit);
 
+// handlers \/
   const editColor = color => {
     setEditing(true);
     setColorToEdit(color);
@@ -21,10 +24,40 @@ const ColorList = ({ colors, updateColors }) => {
     // Make a put request to save your updated color
     // think about where will you get the id from...
     // where is is saved right now?
+    axiosWithAuth()
+    .put(`/api/colors/${colorToEdit.id}`, colorToEdit)
+    .then(res => {
+      const newColors = colors.map(e => {
+        if(e.id === colorToEdit.id){
+return res.data;
+        }
+        else{
+          return e;
+        }
+      });
+      console.log('this is saveEdit put res-->',res,'this is the updated colors-->', colors)
+      updateColors(newColors);
+    })
+    .catch(res => console.log(res));
+    setEditing(false);
   };
 
   const deleteColor = color => {
     // make a delete request to delete this color
+    axiosWithAuth()
+    .delete(`/api/colors/${color.id}`)
+    .then(res => {
+    const newColors = colors.filter(e =>{
+      if(e.id !== color.id){
+        return true;
+      } else{
+        return false;
+      }
+    });
+    updateColors(newColors);
+      console.log('deleted res -->',res)
+    })
+    .catch(res => console.log(res));
   };
 
   return (
@@ -36,7 +69,7 @@ const ColorList = ({ colors, updateColors }) => {
             <span>
               <span className="delete" onClick={e => {
                     e.stopPropagation();
-                    deleteColor(color)
+                    deleteColor(color) // delete request
                   }
                 }>
                   x
@@ -50,6 +83,7 @@ const ColorList = ({ colors, updateColors }) => {
           </li>
         ))}
       </ul>
+      {/* edit form below */}
       {editing && (
         <form onSubmit={saveEdit}>
           <legend>edit color</legend>
